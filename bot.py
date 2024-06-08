@@ -1,5 +1,6 @@
 import discord
-import os
+import os  # Maybe necessary at some point.
+import shutil
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -114,7 +115,7 @@ def random_words(n):
              'midnight', 'sentinel', 'factory', 'waste', 'leave', 'bike', 'listen', 'child', 'adult', 'old', 'grave',
              'agree', 'leaf', 'finish', 'vision', 'remote', 'bottle', 'water', 'backpack', 'package', 'glove', 'bat',
              'happiness', 'friends', 'enemies', 'losing', 'positive', 'bright', 'useful', 'furry', 'sticky', 'notes']
-    amount_of_words = len(words) - 1  # Don't want to recalculate the amount of words each time I update the list.
+    amount_of_words = len(words) - 1  # Don't want to recalculate the number of words each time I update the list.
     # print(len(words))  # Debug step
     for i in range(n):
         what_word = random.randint(0, int(amount_of_words))
@@ -124,6 +125,8 @@ def random_words(n):
 @client.event
 async def on_ready():
     print(f"logon as {client.user}")
+    print("running ver1.1.0-9c80dfb7")
+    shutil.copyfile('token.txt', 'token.txt.bak')
 
 
 @client.event
@@ -135,121 +138,157 @@ async def on_message(message):
         await message.channel.send('Hi!! :3')
 
     if message.content.startswith('$info'):
-        await message.channel.send('A bot that does stupid things, $cmds for cmds. Made by NovaCow. Version 1.0-5ff04e6c')
+        await message.channel.send('A bot that does stupid things, $cmds for cmds. Made by NovaCow. '
+                                   'Version 1.1.0-9c80dfb7')
 
     if message.content.startswith('$cmds'):
-        await message.channel.send('$hi, $info, $cmds, $tos, $words*, $dice*, $hex*, $passwd*, $chars*, $letters*, '
-                                   '$coinflip*. cmds with a * at the end require a space and then a whole integer.')
+        await message.channel.send('$hi, $info, $cmds, $tos, $words^, $dice^, $hex^, $passwd^, $chars^, $letters^, '
+                                   '$coinflip^. cmds with a ^ at the end require a space and then a whole integer.')
 
     if message.content.startswith('$tos'):
         await message.channel.send('ToS can be viewed at: https://novacow.ch/bot/tos/, privacy policy (GDPR compliant)'
                                    ' can be viewed at: https://novacow.ch/bot/privacy-policy')
 
-    if message.content.startswith('$words'):
-        rng = message.content.split(" ", 1)
-        try:
-            amount = int(rng[1])
-            for i in range(0, amount):
-                result = random_words(amount)
-                print(result)
-                await message.channel.send(result)
-        except TypeError as e:
-            await message.channel.send("You didn't specify a number!")
-            print("Oh no! Exception Occurred!! " + str(e))
-        except:
-            await message.channel.send("Something went wrong, try again later!")
-            print("Oh no! Exception Occurred!!")
+    if message.content.startswith('$words'):  # Allow the usage of random_words within Discord.
+        rng = message.content.split(" ", 1)  # Split the message, so we know how many times to do it
+        print(len(rng))   # Debug
+        try:  # If the user decided to pass a string, will allow passing no string to give a standard amount.
+            if 2 > len(rng):  # If the user failed to specify an amount.
+                amount = 5  # We set the default to 5, for other functions it might be 1
+            else:  # If the user does specify an amount
+                amount = int(rng[1])  # This is so that the function we're calling spits out the correct amount.
+            for i in range(0, amount):  # Without this, the bot only sends 1 message, so here we account for all messages sent by the function.
+                result = random_words(amount)  # Push the result of the function in a variable for easy printing.
+                print(result)  # Print it in console, so I can compare the difference between Discord and here.
+                await message.channel.send(result)  # Send the message in the Discord chat.
+        except TypeError as e:  # Exception handling if the user sent a string.
+            await message.channel.send("You didn't specify a number!")  # Notify the user of the mistake.
+            print("Oh no! Exception Occurred in $words!! " + str(e))  # Log in console what went wrong.
+        except:  # More general exception handling.
+            await message.channel.send("Something went wrong, try again later!")  # Tell the user something went wrong.
+            print("Oh no! Exception Occurred in $words!!")  # Log in console that something went wrong.
+# Comments are the same throughout the file and its various functions, only new functions will be explained.
 
     if message.content.startswith("$dice"):
         rng = message.content.split(" ", 1)
+        print(len(rng))
         try:
-            amount = int(rng[1])
+            if 2 > len(rng[1]):
+                amount = 1
+            else:
+                amount = int(rng[1])
             for i in range(0, amount):
                 result = dice(amount)
                 print(result)
                 await message.channel.send(str(result))
         except TypeError as e:
             await message.channel.send("You didn't specify a number!")
-            print("Oh no! Exception Occurred!! " + str(e))
+            print("Oh no! Exception Occurred in $dice!! " + str(e))
         except:
             await message.channel.send("Something went wrong, try again later!")
-            print("Oh no! Exception Occurred!!")
+            print("Oh no! Exception Occurred in $dice!!")
 
     if message.content.startswith("$hex"):
         rng = message.content.split(" ", 1)
+        print(len(rng))
         try:
-            amount = int(rng[1])
+            if 2 > len(rng[1]):
+                amount = 4
+            else:
+                amount = int(rng[1])
             for i in range(0, amount):
                 result = random_hex(amount)
                 print(result)
                 await message.channel.send(str(result))
         except TypeError as e:
             await message.channel.send("You didn't specify a number!")
-            print("Oh no! Exception Occurred!! " + str(e))
+            print("Oh no! Exception Occurred in $hex!! " + str(e))
         except:
             await message.channel.send("Something went wrong, try again later!")
-            print("Oh no! Exception Occurred!!")
+            print("Oh no! Exception Occurred in $hex!!")
 
     if message.content.startswith("$passwd"):
         rng = message.content.split(" ", 1)
+        print(len(rng))
         try:
-            amount = int(rng[1])
+            if 2 > len(rng[1]):
+                amount = 8
+            else:
+                amount = int(rng[1])
             for i in range(0, amount):
                 result = passwd(amount)
                 print(result)
                 await message.channel.send(str(result))
         except TypeError as e:
             await message.channel.send("You didn't specify a number!")
-            print("Oh no! Exception Occurred!! " + str(e))
+            print("Oh no! Exception Occurred in $passwd!! " + str(e))
         except:
             await message.channel.send("Something went wrong, try again later!")
-            print("Oh no! Exception Occurred!!")
+            print("Oh no! Exception Occurred in $passwd!!")
 
     if message.content.startswith("$chars"):
         rng = message.content.split(" ", 1)
+        print(len(rng))
         try:
-            amount = int(rng[1])
+            if 2 > len(rng[1]):
+                amount = 1
+            else:
+                amount = int(rng[1])
             for i in range(0, amount):
                 result = random_chars(amount)
                 print(result)
                 await message.channel.send(str(result))
         except TypeError as e:
             await message.channel.send("You didn't specify a number!")
-            print("Oh no! Exception Occurred!! " + str(e))
+            print("Oh no! Exception Occurred in $chars!! " + str(e))
         except:
             await message.channel.send("Something went wrong, try again later!")
-            print("Oh no! Exception Occurred!!")
+            print("Oh no! Exception Occurred in $chars!!")
 
     if message.content.startswith("$letters"):
         rng = message.content.split(" ", 1)
+        print(len(rng))
         try:
-            amount = int(rng[1])
+            if 2 > len(rng[1]):
+                amount = 1
+            else:
+                amount = int(rng[1])
             for i in range(0, amount - 1):
                 result = random_letter(amount)
                 print(result)
                 await message.channel.send(str(result))
         except TypeError as e:
             await message.channel.send("You didn't specify a number!")
-            print("Oh no! Exception Occurred!! " + str(e))
+            print("Oh no! Exception Occurred in $letters!! " + str(e))
         except:
             await message.channel.send("Something went wrong, try again later!")
-            print("Oh no! Exception Occurred!!")
+            print("Oh no! Exception Occurred in $letters!!")
 
     if message.content.startswith("$coinflip"):
         rng = message.content.split(" ", 1)
+        print(len(rng))
         try:
-            amount = int(rng[1])
+            if 2 > len(rng):
+                amount = 1
+            else:
+                amount = int(rng[1])  # For-loop is not necessary because this function returns as one string.
             result = coinflip(amount)
             print(result)
             await message.channel.send(result)
         except TypeError as e:
             await message.channel.send("You didn't specify a number!")
-            print("Oh no! Exception Occurred!! " + str(e))
+            print("Oh no! Exception Occurred in $coinflip!! " + str(e))
         except:
             await message.channel.send("Something went wrong, try again later!")
-            print("Oh no! Exception Occurred!!")
+            print("Oh no! Exception Occurred in $coinflip!!")
 
-
-token = open('token.txt', 'r')
-content = token.read()
-client.run(content)
+# Make the token a file, this way I don't expose it within the source. (Rookie mistake)
+# And give back-up capabilities.
+try:
+    token = open('token.txt', 'r')
+    content = token.read()
+    client.run(content)
+except:
+    print("WARNING!! Running failed! Assuming token is corrupted. Restoring token, please relaunch!! If this message "
+          "continues to appear please generate a new token.txt file with a valid token")
+    shutil.copyfile('token.txt.bak', 'token.txt')
