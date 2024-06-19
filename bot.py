@@ -6,6 +6,8 @@ intents = discord.Intents.default()
 intents.message_content = True
 client = discord.Client(intents=intents)
 
+
+# Code is taken from another project of mine, code gets updated regularly. So check if you have the latest version installed!
 import random
 
 
@@ -125,10 +127,14 @@ def random_words(n):
 @client.event
 async def on_ready():
     print(f"logon as {client.user}")
-    print("running ver1.1.0-9c80dfb7")
+    print("running ver1.1.1-bee07c64-edge")
     shutil.copyfile('token.txt', 'token.txt.bak')
 
-
+# TODO: Add function to check for updates and warn user if it's outdated.
+# NOTE: An auto-updater is unnecessary, just prompt the user an update is avalible
+# NOTE: at startup and when running the '$info' cmd.
+# NOTE: Ask at first-run to enable or disable it and to enable checking for 'edge' updates.
+# NOTE: And probably host the main file somewhere.
 @client.event
 async def on_message(message):
     if message.author == client.user:
@@ -139,7 +145,7 @@ async def on_message(message):
 
     if message.content.startswith('$info'):
         await message.channel.send('A bot that does stupid things, $cmds for cmds. Made by NovaCow. '
-                                   'Version 1.1.0-9c80dfb7')
+                                   'Version 1.1.1-bee07c64-edge')
 
     if message.content.startswith('$cmds'):
         await message.channel.send('$hi, $info, $cmds, $tos, $words^, $dice^, $hex^, $passwd^, $chars^, $letters^, '
@@ -253,7 +259,7 @@ async def on_message(message):
                 amount = 1
             else:
                 amount = int(rng[1])
-            for i in range(0, amount - 1):
+            for i in range(0, amount):
                 result = random_letter(amount)
                 print(result)
                 await message.channel.send(str(result))
