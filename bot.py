@@ -1,6 +1,8 @@
 import discord
 import os  # Maybe necessary at some point.
 import shutil
+import requests  # Used for auto-updating
+import time
 
 intents = discord.Intents.default()
 intents.message_content = True
@@ -92,6 +94,7 @@ def coinflip(n):
 
 
 def random_words(n):
+    global amount_of_words
     """Chooses words based on its given dictionary of words. Codename Schizophrenia Generator."""
     words = ['hi', 'good', 'awesome', 'power', 'even', 'urge', 'oh', 'cool', 'pretty', 'very', 'tech', 'i', 'costs',
              'word', 'flipped', 'random', 'head', 'for', 'times', 'what', 'but', 'only', 'nothing', 'panels', 'stove',
@@ -117,26 +120,50 @@ def random_words(n):
              'midnight', 'sentinel', 'factory', 'waste', 'leave', 'bike', 'listen', 'child', 'adult', 'old', 'grave',
              'agree', 'leaf', 'finish', 'vision', 'remote', 'bottle', 'water', 'backpack', 'package', 'glove', 'bat',
              'happiness', 'friends', 'enemies', 'losing', 'positive', 'bright', 'useful', 'furry', 'sticky', 'notes']
-    amount_of_words = len(words) - 1  # Don't want to recalculate the number of words each time I update the list.
+    amount_of_words = len(words)  # Don't want to recalculate the number of words each time I update the list.
     # print(len(words))  # Debug step
     for i in range(n):
-        what_word = random.randint(0, int(amount_of_words))
+        what_word = random.randint(0, amount_of_words)
         return words[what_word]
 
 
 @client.event
 async def on_ready():
+    global ver
+    global update
+    global content
     print(f"logon as {client.user}")
-    print("running ver1.1.1-bee07c64-edge")
+    print("running ver1.1.2-bde76e67-edge")
+    print('checking for updates...')
+    ver = 6
+    check_for_update = requests.get('https://novacow.ch/bot/ver.txt')
+    content = check_for_update.text
+    content = int(content)
+    update = False
+    if ver < content:
+        print('an update is avalible! you are running version ' + str(ver) + ' and you can update to '
+              'version ' + str(content))
+        print('goto the github page for the update (https://github.com/novacow/chance-gen)')
+        update = True
+    elif ver > content:
+        print('either an error occured retrieving the version number or you are running a dev build.')
+        print('setting update flag to false')
+    elif ver == content:
+        print('you are running the latest version')
+    else:
+        print('an error occured retrieving update status, defaulting to no update.')
     shutil.copyfile('token.txt', 'token.txt.bak')
 
 # TODO: Add function to check for updates and warn user if it's outdated.
 # NOTE: An auto-updater is unnecessary, just prompt the user an update is avalible
 # NOTE: at startup and when running the '$info' cmd.
 # NOTE: Ask at first-run to enable or disable it and to enable checking for 'edge' updates.
-# NOTE: And probably host the main file somewhere.
 @client.event
 async def on_message(message):
+    global ver
+    global update
+    global content
+    global amount_of_words
     if message.author == client.user:
         return
 
@@ -145,8 +172,10 @@ async def on_message(message):
 
     if message.content.startswith('$info'):
         await message.channel.send('A bot that does stupid things, $cmds for cmds. Made by NovaCow. '
-                                   'Version 1.1.1-bee07c64-edge')
-
+                                   'Version 1.1.2-bde76e67-edge')
+        if update:
+            await message.channel.send('An update is avalible! You are running version ' + str(ver) + ' and you can update to '
+              'version ' + str(content) + '\nGoto the GitHub page for the update. (https://github.com/novacow/chance-gen)')
     if message.content.startswith('$cmds'):
         await message.channel.send('$hi, $info, $cmds, $tos, $words^, $dice^, $hex^, $passwd^, $chars^, $letters^, '
                                    '$coinflip^. cmds with a ^ at the end require a space and then a whole integer.')
@@ -163,6 +192,19 @@ async def on_message(message):
                 amount = 5  # We set the default to 5, for other functions it might be 1
             else:  # If the user does specify an amount
                 amount = int(rng[1])  # This is so that the function we're calling spits out the correct amount.
+
+            if amount > 282:
+                await message.channel.send('HOLD ON! You are generating ' + str(amount) + ' words, while the dictionary '
+                      'of this bot is only 282 words! This will not '
+                      'only create a lot of spam (and ratelimit my poor bot xdd) but also generate '
+                      'duplicates! Be warned! Continuing in 10 seconds...')
+                time.sleep(10)
+            elif amount > 100:
+                await message.channel.send('Hold on! You are going to generate a lot of words! Expect a lot of spam! '
+                    'Continuing in 5 seconds...')
+                time.sleep(5)
+            else:
+                pass
             for i in range(0, amount):  # Without this, the bot only sends 1 message, so here we account for all messages sent by the function.
                 result = random_words(amount)  # Push the result of the function in a variable for easy printing.
                 print(result)  # Print it in console, so I can compare the difference between Discord and here.
